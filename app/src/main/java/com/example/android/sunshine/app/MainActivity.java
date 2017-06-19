@@ -1,17 +1,19 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v4.app.Fragment;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
 
 public class MainActivity extends ActionBarActivity {
+
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,39 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_view_pref_location) {
+            openPreferredLocationInMap();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Loads the preferred location in a map, if the user's device contains an app for viewing a map.
+     */
+    private void openPreferredLocationInMap() {
+//        My implementation
+//        Intent intent = new Intent(Intent.ACTION_VIEW);
+//        Uri geo = Uri.parse("geo:0,0?q=" + PreferenceManager.getDefaultSharedPreferences(this)
+//                .getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default_value)));
+//        intent.setData(geo);
+//        if (intent.resolveActivity(getPackageManager()) != null) {
+//            startActivity(intent);
+//        }
+
+        // Instructor implementation
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String location = sharedPrefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default_value));
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q", location).build();
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + location + ", no maps receiving apps installed");
+        }
     }
 }
